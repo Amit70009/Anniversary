@@ -57,23 +57,23 @@ const STORAGE_KEY = "loveGiftFinder.names";
 const SLIDES = [
   {
     caption: "Here's to the two of you",
-    image: "/images/slide1.jpg",
+    image: "/images/Slide1.jpg",
   },
   {
     caption: "A toast to forever",
-    image: "/images/slide2.jpg",
+    image: "/images/Slide2.jpg",
   },
   {
     caption: "Sweet memories, sweeter future",
-    image: "/images/slide3.jpg",
+    image: "/images/Slide3.jpg",
   },
   {
     caption: "Walking into the sunset, together",
-    image: "/images/slide4.jpg",
+    image: "/images/Slide4.jpg",
   },
   {
     caption: "Forever starts today",
-    image: "/images/slide5.jpg",
+    image: "/images/Slide5.jpg",
   },
 ];
 

@@ -8,6 +8,9 @@ import { useNavigate } from "react-router-dom";
  * two name inputs (yours + your spouse's) that persist to localStorage,
  * and a "Click here to find your gift" button that reveals a surprise.
  *
+ * The reveal is gated behind a countdown: before the target time, visitors
+ * see a countdown timer instead of the gift-finder card.
+ *
  * Usage: import LoveGiftFinder from "./LoveGiftFinder";
  *        <LoveGiftFinder />
  *
@@ -16,6 +19,10 @@ import { useNavigate } from "react-router-dom";
 
 const STORAGE_KEY = "loveGiftFinder.names";
 
+// Target reveal time: 12:00 AM, Nov 25 2026, IST (UTC+5:30).
+// Using an explicit offset means this fires at the same real-world
+// instant no matter what timezone the visitor's browser is set to.
+const REVEAL_TIME = new Date("2026-11-25T00:00:00+05:30").getTime();
 
 // Generate a stable set of hearts with randomized animation params
 function makeHearts(count) {
@@ -34,11 +41,24 @@ function makeHearts(count) {
   return hearts;
 }
 
+function getTimeParts(msRemaining) {
+  const total = Math.max(0, Math.floor(msRemaining / 1000));
+  return {
+    days: Math.floor(total / 86400),
+    hours: Math.floor((total % 86400) / 3600),
+    minutes: Math.floor((total % 3600) / 60),
+    seconds: total % 60,
+  };
+}
+
 export default function LoveGiftFinder() {
   const [name, setName] = useState("");
   const [spouseName, setSpouseName] = useState("");
   const heartsRef = useRef(makeHearts(28));
   const navigate = useNavigate();
+
+  const [isUnlocked, setIsUnlocked] = useState(() => Date.now() >= REVEAL_TIME);
+  const [remaining, setRemaining] = useState(() => REVEAL_TIME - Date.now());
 
   // Clear any previously saved names on mount so the page always asks fresh
   useEffect(() => {
@@ -63,6 +83,27 @@ export default function LoveGiftFinder() {
     }
   }, [name, spouseName]);
 
+  // Tick the countdown every second until the reveal time passes
+  useEffect(() => {
+    if (isUnlocked) return;
+
+    const tick = () => {
+      const diff = REVEAL_TIME - Date.now();
+      if (diff <= 0) {
+        setRemaining(0);
+        setIsUnlocked(true);
+      } else {
+        setRemaining(diff);
+      }
+    };
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [isUnlocked]);
+
+  const { days, hours, minutes, seconds } = getTimeParts(remaining);
+  const pad = (n) => String(n).padStart(2, "0");
 
   return (
     <div style={styles.page}>
@@ -90,44 +131,66 @@ export default function LoveGiftFinder() {
 
       {/* Foreground card */}
       <div style={styles.card}>
-        <h1 style={styles.title}>Find Your Gift 🎁</h1>
-        <p style={styles.subtitle}>
-          Enter your names and discover a little something made for you two.
-        </p>
+        {!isUnlocked ? (
+          <>
+            <h1 style={styles.title}>Something's Coming 💝</h1>
+            <p style={styles.subtitle}>
+              Come back when the countdown hits zero to find your gift.
+            </p>
+            <div style={styles.countdownRow}>
+              {[
+                { label: "Days", value: days },
+                { label: "Hours", value: hours },
+                { label: "Mins", value: minutes },
+                { label: "Secs", value: seconds },
+              ].map((unit) => (
+                <div key={unit.label} style={styles.countdownUnit}>
+                  <div style={styles.countdownNumber}>{pad(unit.value)}</div>
+                  <div style={styles.countdownLabel}>{unit.label}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 style={styles.title}>Find Your Gift 🎁</h1>
+            <p style={styles.subtitle}>
+              Enter your names and discover a little something made for you two.
+            </p>
 
-        <div style={styles.inputGroup}>
-          <label style={styles.label} htmlFor="your-name">
-            Your Name
-          </label>
-          <input
-            id="your-name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Alex"
-            style={styles.input}
-          />
-        </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label} htmlFor="your-name">
+                Your Name
+              </label>
+              <input
+                id="your-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Alex"
+                style={styles.input}
+              />
+            </div>
 
-        <div style={styles.inputGroup}>
-          <label style={styles.label} htmlFor="spouse-name">
-            Your Spouse's Name
-          </label>
-          <input
-            id="spouse-name"
-            type="text"
-            value={spouseName}
-            onChange={(e) => setSpouseName(e.target.value)}
-            placeholder="e.g. Jordan"
-            style={styles.input}
-          />
-        </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label} htmlFor="spouse-name">
+                Your Spouse's Name
+              </label>
+              <input
+                id="spouse-name"
+                type="text"
+                value={spouseName}
+                onChange={(e) => setSpouseName(e.target.value)}
+                placeholder="e.g. Jordan"
+                style={styles.input}
+              />
+            </div>
 
-        <button style={styles.button} onClick={() => navigate("/admin")}>
-          Click here to find your gift
-        </button>
-
-        
+            <button style={styles.button} onClick={() => navigate("/admin")}>
+              Click here to find your gift
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -190,6 +253,32 @@ const styles = {
     color: "#555",
     fontSize: "14px",
   },
+  countdownRow: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "12px",
+    marginTop: "8px",
+  },
+  countdownUnit: {
+    background: "#fff0f5",
+    border: "1px dashed #c44569",
+    borderRadius: "10px",
+    padding: "10px 12px",
+    minWidth: "60px",
+  },
+  countdownNumber: {
+    fontSize: "22px",
+    fontWeight: 700,
+    color: "#6a2c70",
+    fontVariantNumeric: "tabular-nums",
+  },
+  countdownLabel: {
+    fontSize: "11px",
+    color: "#888",
+    marginTop: "2px",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+  },
   inputGroup: {
     textAlign: "left",
     marginBottom: "16px",
@@ -222,18 +311,5 @@ const styles = {
     borderRadius: "12px",
     cursor: "pointer",
     boxShadow: "0 8px 20px rgba(196,69,105,0.4)",
-  },
-  giftBox: {
-    marginTop: "20px",
-    padding: "16px",
-    borderRadius: "12px",
-    background: "#fff0f5",
-    border: "1px dashed #c44569",
-  },
-  giftText: {
-    margin: 0,
-    color: "#6a2c70",
-    fontSize: "15px",
-    lineHeight: 1.5,
   },
 };

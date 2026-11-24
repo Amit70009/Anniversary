@@ -367,6 +367,7 @@ const cardCSS = `
     transition: transform 0.4s ease, opacity 0.4s ease;
     cursor: pointer;
     outline: none;
+    box-sizing: border-box;
   }
 
   .gift-box:hover:not(.gift-box-hidden):not(.gift-box-enlarged) {
@@ -454,6 +455,7 @@ const styles = {
   boxOuter: {
     width: "100%",
     aspectRatio: "3 / 4",
+    boxSizing: "border-box",
   },
   boxFace: {
     position: "relative",
@@ -465,6 +467,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     padding: "16px",
+    boxSizing: "border-box",
     boxShadow: "0 10px 28px rgba(0,0,0,0.2)",
     background: "linear-gradient(135deg, #ff8fab, #c44569)",
   },
@@ -482,6 +485,7 @@ const styles = {
   revealFace: {
     background: "rgba(255, 255, 255, 0.98)",
     padding: "32px 24px",
+    boxSizing: "border-box",
     minHeight: "260px",
   },
   stepText: {
@@ -517,6 +521,7 @@ const styles = {
     border: "1px solid #f0c3d3",
     borderRadius: "8px",
     cursor: "pointer",
+    boxSizing: "border-box",
   },
   ratingBtnActive: {
     background: "linear-gradient(135deg, #ff6b9d, #c44569)",
@@ -532,6 +537,7 @@ const styles = {
     border: "none",
     borderRadius: "10px",
     cursor: "pointer",
+    boxSizing: "border-box",
     boxShadow: "0 6px 16px rgba(196,69,105,0.35)",
   },
   closeHint: {

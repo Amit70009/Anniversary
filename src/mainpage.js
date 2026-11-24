@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, Route } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 /**
  * LoveGiftFinder
@@ -37,7 +37,6 @@ function makeHearts(count) {
 export default function LoveGiftFinder() {
   const [name, setName] = useState("");
   const [spouseName, setSpouseName] = useState("");
-  const [gift, setGift] = useState(null);
   const heartsRef = useRef(makeHearts(28));
   const navigate = useNavigate();
 

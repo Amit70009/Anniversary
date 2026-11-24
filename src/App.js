@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoveGiftFinder from "./mainpage";
 import Anniversary from "./FirstPage"
 import GiftCards from "./GiftManePage";
